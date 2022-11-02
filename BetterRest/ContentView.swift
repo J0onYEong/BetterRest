@@ -14,10 +14,15 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var wakeUp = Date.now
+    @State private var wakeUp = defaultWakeUpTime
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
     
+    static var defaultWakeUpTime: Date {
+        var component = DateComponents()
+        component.hour = 7
+        return Calendar.current.date(from: component) ?? Date.now
+    }
     
     //Alert
     @State var alertTitle = ""
@@ -26,20 +31,37 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("When do you want to wake up?")
-                    .font(.headline)
-                DatePicker("please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
+            Form {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("When do you want to wake up?")
+                        .font(.headline)
+                        .padding(.bottom)
+                    DatePicker("please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                }
                 
-                Text("Desired amount of sleep")
-                    .font(.headline)
-                Stepper("\(sleepAmount.formatted())", value: $sleepAmount, in: 4...12, step: 0.25)
-                
-                Text("Daily coffee intake")
-                    .font(.headline)
-                Stepper("\(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups" )",value: $coffeeAmount, in: 1...20)
-                
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Desired amount of sleep")
+                        .font(.headline)
+                    HStack {
+                        Text("\(sleepAmount.formatted())")
+                            .capsuling()
+                        Spacer()
+                        Stepper("Desired amount of sleep Stepper", value: $sleepAmount, in: 4...12, step: 0.25)
+                            .labelsHidden()
+                    }
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Daily coffee in take")
+                        .font(.headline)
+                    HStack {
+                        Text(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups")
+                            .capsuling()
+                        Spacer()
+                        Stepper("coffee amount stepper",value: $coffeeAmount, in: 1...20)
+                            .labelsHidden()
+                    }
+                }
             }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("Ok"){}
@@ -81,6 +103,34 @@ struct ContentView: View {
         showingAlert = true
     }
 }
+
+extension Color {
+    init(hex: UInt, alpha: Double = 1) {
+        self.init(
+            .sRGB,
+            red: Double((hex >> 16) & 0xff) / 255,
+            green: Double((hex >> 08) & 0xff) / 255,
+            blue: Double((hex >> 00) & 0xff) / 255,
+            opacity: alpha
+        )
+    }
+}
+
+struct CapsuleText: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(3)
+            .background(Color(hex: 0xdfe6e9))
+            .clipShape(Capsule())
+    }
+}
+
+extension View {
+    func capsuling() -> some View {
+        self.modifier(CapsuleText())
+    }
+}
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
