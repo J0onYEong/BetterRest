@@ -32,17 +32,20 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             Form {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("When do you want to wake up?")
-                        .font(.headline)
-                        .padding(.bottom)
+                Section("Recommended Sleep Time") {
+                    Text((calculateBedtime(wakeUpTime: wakeUp) ?? Date.now).formatted(date: .omitted, time: .shortened))
+                        .font(.largeTitle)
+                        .capsuling()
+                        .centering()
+                }
+        
+                Section("When do you want to wake up?") {
                     DatePicker("please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
+                        .centering()
                 }
                 
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Desired amount of sleep")
-                        .font(.headline)
+                Section("Desired amount of sleep") {
                     HStack {
                         Text("\(sleepAmount.formatted())")
                             .capsuling()
@@ -50,41 +53,40 @@ struct ContentView: View {
                         Stepper("Desired amount of sleep Stepper", value: $sleepAmount, in: 4...12, step: 0.25)
                             .labelsHidden()
                     }
+                    .padding([.top, .bottom], 2)
                 }
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Daily coffee in take")
-                        .font(.headline)
+                
+                Section("Daily coffee in take") {
                     HStack {
                         Text(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups")
                             .capsuling()
                         Spacer()
-                        Stepper("coffee amount stepper",value: $coffeeAmount, in: 1...20)
-                            .labelsHidden()
+                        Picker("coffee amount stepper", selection: $coffeeAmount) {
+                            ForEach(Array(1...20), id: \.self) {
+                                Text(String($0))
+                            }
+                        }
                     }
+                    .padding([.top, .bottom], 2)
                 }
             }
             .alert(alertTitle, isPresented: $showingAlert) {
-                Button("Ok"){}
+                Button("Ok") {}
             } message: {
                 Text(alertMessage)
             }
             
             .navigationTitle("BetterRest")
-            .toolbar {
-                Button("Calculate") {
-                    calculateBedtime()
-                }
-            }
         }
     }
     
-    func calculateBedtime() {
+    func calculateBedtime(wakeUpTime: Date) -> Date? {
         do {
             //for 1 in 1000 folk need some configuration
             let config = MLModelConfiguration()
             let model = try SleepCalculator(configuration: config)
             
-            let components = Calendar.current.dateComponents([.hour, .minute], from: wakeUp)
+            let components = Calendar.current.dateComponents([.hour, .minute], from: wakeUpTime)
             let hour = (components.hour ?? 0) * 3600
             let minute = (components.minute ?? 0) * 60
             let wake = Double(hour + minute)
@@ -93,14 +95,14 @@ struct ContentView: View {
             //actaualSleep은 커피양, 기상시간, 수면희망시간을 고려해 실제로 잠을 청한 시간을 의미한다.
             //wakeUp은 기상시간으로 해당 시에서 actualSleep을 뺌으로써 취침시간을 알 수 있다.
             let sleepTime = wakeUp - prediction.actualSleep
-            alertTitle = "Your ideal bedtime is…"
-            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+            return sleepTime
         } catch {
             // something went wrong!
             alertTitle = "Error"
             alertMessage = "Sorry, there was a problem calculating your bedtime."
+            showingAlert = true
+            return nil
         }
-        showingAlert = true
     }
 }
 
@@ -120,14 +122,29 @@ struct CapsuleText: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(3)
+            .padding([.leading, .trailing], 10)
             .background(Color(hex: 0xdfe6e9))
             .clipShape(Capsule())
+    }
+}
+
+struct CenteringContent: ViewModifier {
+    func body(content: Content) -> some View {
+        HStack {
+            Spacer()
+            content
+            Spacer()
+        }
     }
 }
 
 extension View {
     func capsuling() -> some View {
         self.modifier(CapsuleText())
+    }
+    
+    func centering() -> some View {
+        self.modifier(CenteringContent())
     }
 }
 
