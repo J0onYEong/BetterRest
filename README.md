@@ -1,7 +1,12 @@
 # BetterRest
-Project4 in HackingWithSwift
+학습용 SwiftUI 토이프로젝트입니다.
 
-# 기능
-유저로 부터 인풋을 받은 후 해당 인풋을 머신러닝으로 만들어낸 모델로 분석하여 적절한 수면 시간시간을 산출해내는 프로그램이다.
+# 사용된 기술
+- Stepper
+- Date Picker
+- 특정날짜를 생성및 표현방식
+- Create ML(간단한 코드로 머신러닝결과를 반환해주는 프로그램)
 
-[프로젝트 학습정리 Notion링크](https://cactus-snout-d26.notion.site/Project4-BetterRest-bf452ddf72c7456084138fc8609c0e5a)
+# 어플리케이션 동작영상 및 학습정리
+
+[Notion](https://cactus-snout-d26.notion.site/Project4-BetterRest-bf452ddf72c7456084138fc8609c0e5a)
